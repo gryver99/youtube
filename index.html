@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Carosello Video Casuali - Gryvery</title>
+<style>
+body {
+  margin: 0;
+  background: #000;
+  font-family: Arial, sans-serif;
+}
+.carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+.carousel iframe {
+  width: 360px;
+  height: 202px;
+  margin: 10px;
+  border-radius: 10px;
+  scroll-snap-align: center;
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<div id="carousel" class="carousel"></div>
+
+<script>
+const API_KEY = "INSERISCI_LA_TUA_API_KEY";
+const CHANNEL_ID = "UC3qH1u3Qe9n2kGx0iJY9hwA"; // Gryvery
+const MAX_VIDEOS = 10;
+
+async function getVideos() {
+  const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=50`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.items.filter(v => v.id.videoId);
+}
+
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+async function loadCarousel() {
+  const videos = await getVideos();
+  const randomVideos = shuffle(videos).slice(0, MAX_VIDEOS);
+
+  const container = document.getElementById("carousel");
+  randomVideos.forEach(v => {
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.youtube.com/embed/${v.id.videoId}`;
+    container.appendChild(iframe);
+  });
+}
+
+loadCarousel();
+</script>
+
+</body>
+</html>
