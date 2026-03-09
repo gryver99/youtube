@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>GameLeaf - Gryvery</title>
+<title>Carosello Video Casuali - Gryvery</title>
 <style>
 body {
   margin: 0;
@@ -29,34 +29,33 @@ body {
 <div id="carousel" class="carousel"></div>
 
 <script>
-const API_KEY = "AIzaSyAFAqGzibAY12UcBSyK6bMtYEGrbBUN_Jw";
 const CHANNEL_ID = "UC3qH1u3Qe9n2kGx0iJY9hwA"; // Gryvery
 const MAX_VIDEOS = 10;
 
-async function getVideos() {
-  const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=50`;
-  const res = await fetch(url);
+async function loadVideos() {
+  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+
+  const res = await fetch(proxy);
   const data = await res.json();
-  return data.items.filter(v => v.id.videoId);
-}
 
-function shuffle(array) {
-  return array.sort(() => Math.random() - 0.5);
-}
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(data.contents, "text/xml");
 
-async function loadCarousel() {
-  const videos = await getVideos();
-  const randomVideos = shuffle(videos).slice(0, MAX_VIDEOS);
+  const entries = [...xml.querySelectorAll("entry")];
+  const videos = entries.map(e => e.querySelector("yt\\:videoId").textContent);
+
+  const random = videos.sort(() => Math.random() - 0.5).slice(0, MAX_VIDEOS);
 
   const container = document.getElementById("carousel");
-  randomVideos.forEach(v => {
+  random.forEach(id => {
     const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube.com/embed/${v.id.videoId}`;
+    iframe.src = `https://www.youtube.com/embed/${id}`;
     container.appendChild(iframe);
   });
 }
 
-loadCarousel();
+loadVideos();
 </script>
 
 </body>
