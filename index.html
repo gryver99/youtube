@@ -2,60 +2,151 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>Carosello Video Casuali - Gryvery</title>
+<title>Carosello Video Gryvery</title>
 <style>
 body {
   margin: 0;
   background: #000;
   font-family: Arial, sans-serif;
+  color: #fff;
 }
+
+.carousel-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
 .carousel {
   display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
+  transition: transform 0.5s ease;
 }
-.carousel iframe {
+
+.video-card {
+  min-width: 360px;
+  margin: 10px;
+  text-align: center;
+}
+
+.video-card iframe {
   width: 360px;
   height: 202px;
-  margin: 10px;
   border-radius: 10px;
-  scroll-snap-align: center;
   border: none;
 }
+
+.video-title {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #fff;
+}
+
+/* Pulsanti */
+.btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 30px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 8px;
+  user-select: none;
+}
+
+.btn:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+#prevBtn { left: 10px; }
+#nextBtn { right: 10px; }
 </style>
 </head>
 <body>
 
-<div id="carousel" class="carousel"></div>
+<div class="carousel-container">
+  <button id="prevBtn" class="btn">❮</button>
+  <button id="nextBtn" class="btn">❯</button>
+
+  <div id="carousel" class="carousel"></div>
+</div>
 
 <script>
-const CHANNEL_ID = "UC3qH1u3Qe9n2kGx0iJY9hwA"; // Gryvery
-const MAX_VIDEOS = 10;
+// Lista video + titoli
+const VIDEOS = [
+  {id:"AlKQqBHOvBA", title:"Video 1"},
+  {id:"dU3UEGASMRk", title:"Video 2"},
+  {id:"dftSDyemcS0", title:"Video 3"},
+  {id:"d_MNbdLEoQ8", title:"Video 4"},
+  {id:"gaYagaeZCEU", title:"Video 5"},
+  {id:"68ymUufUaNs", title:"Video 6"},
+  {id:"5x53uG35EWI", title:"Video 7"},
+  {id:"2IEc3UXoTMc", title:"Video 8"},
+  {id:"k_dlmxP3ycs", title:"Video 9"},
+  {id:"A6Z9kWJfUf8", title:"Video 10"},
+  {id:"LaQ-Y4pDi_4", title:"Video 11"},
+  {id:"Uw81F2CyJsM", title:"Video 12"},
+  {id:"EfEQmbSjdO8", title:"Video 13"},
+  {id:"P2BHmC6CB0I", title:"Video 14"},
+  {id:"gkyTk2JOopo", title:"Video 15"},
+  {id:"759A49vvSpU", title:"Video 16"},
+  {id:"KL80h4dNRco", title:"Video 17"},
+  {id:"pKx2JWjLBVI", title:"Video 18"},
+  {id:"EPeN3hWaRBw", title:"Video 19"},
+  {id:"T2miE5DGOZY", title:"Video 20"},
+  {id:"Y4MUJywQtlA", title:"Video 21"},
+  {id:"ZhXriEpQD1A", title:"Video 22"},
+  {id:"TeI4VvaRc74", title:"Video 23"},
+  {id:"634UEUVUzIM", title:"Video 24"},
+  {id:"LwRa2aCvhPM", title:"Video 25"}
+];
 
-async function loadVideos() {
-  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-
-  const res = await fetch(proxy);
-  const data = await res.json();
-
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(data.contents, "text/xml");
-
-  const entries = [...xml.querySelectorAll("entry")];
-  const videos = entries.map(e => e.querySelector("yt\\:videoId").textContent);
-
-  const random = videos.sort(() => Math.random() - 0.5).slice(0, MAX_VIDEOS);
-
-  const container = document.getElementById("carousel");
-  random.forEach(id => {
-    const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube.com/embed/${id}`;
-    container.appendChild(iframe);
-  });
+// Mescola casualmente
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
 }
 
-loadVideos();
+const randomVideos = shuffle(VIDEOS);
+
+const carousel = document.getElementById("carousel");
+
+// Genera i video
+randomVideos.forEach(v => {
+  const card = document.createElement("div");
+  card.className = "video-card";
+
+  card.innerHTML = `
+    <iframe src="https://www.youtube.com/embed/${v.id}"></iframe>
+    <div class="video-title">${v.title}</div>
+  `;
+
+  carousel.appendChild(card);
+});
+
+// Scorrimento manuale
+let index = 0;
+
+function updateCarousel() {
+  carousel.style.transform = `translateX(${-index * 380}px)`;
+}
+
+document.getElementById("nextBtn").onclick = () => {
+  if (index < randomVideos.length - 1) index++;
+  updateCarousel();
+};
+
+document.getElementById("prevBtn").onclick = () => {
+  if (index > 0) index--;
+  updateCarousel();
+};
+
+// Scorrimento automatico ogni 4 secondi
+setInterval(() => {
+  index = (index + 1) % randomVideos.length;
+  updateCarousel();
+}, 4000);
 </script>
 
 </body>
